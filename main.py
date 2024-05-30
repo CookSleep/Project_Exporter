@@ -63,19 +63,24 @@ class ProjectExportTool(QMainWindow):
 
     def generate_file_structure(self, root_dir, output_file):
         with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(self.get_directory_tree(root_dir))
+            f.write(self.get_directory_tree(root_dir, output_file))
             for dirpath, _, filenames in os.walk(root_dir):
                 for filename in filenames:
                     filepath = os.path.join(dirpath, filename)
-                    f.write(f"### {filepath} ###\n")
+                    # 忽略输出文件
+                    if filepath == output_file:
+                        continue
+                    normalized_path = os.path.normpath(filepath).replace('\\', '/')
+                    f.write(f"\n<file path=\"{normalized_path}\">\n")
                     try:
                         with open(filepath, 'r', encoding='utf-8') as file:
                             content = file.read()
-                            f.write(content + "\n\n")
+                            f.write(content + "\n")
                     except Exception as e:
-                        f.write(f"无法读取文件内容: {e}\n\n")
+                        f.write(f"无法读取文件内容: {e}\n")
+                    f.write("</file>\n")
 
-    def get_directory_tree(self, root_dir):
+    def get_directory_tree(self, root_dir, output_file):
         tree = []
         for dirpath, dirnames, filenames in os.walk(root_dir):
             level = dirpath.replace(root_dir, '').count(os.sep)
@@ -83,6 +88,9 @@ class ProjectExportTool(QMainWindow):
             tree.append(f"{indent}├── {os.path.basename(dirpath)}/")
             subindent = '│   ' * (level + 1)
             for f in filenames:
+                # 忽略输出文件
+                if os.path.join(dirpath, f) == output_file:
+                    continue
                 tree.append(f"{subindent}├── {f}")
         return "\n".join(tree) + "\n"
 
