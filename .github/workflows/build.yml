@@ -28,14 +28,14 @@ jobs:
 
     - name: Create and modify spec file
       run: |
-        pyinstaller --name ProjectExportTool --windowed --onefile main.py
+        pyinstaller --name ProjectExportTool --windowed --onefile main_for_mac.py
         # 修改.spec文件
         sed -i '' 's/console=True/console=False/' ProjectExportTool.spec
         cat << 'EOF' >> ProjectExportTool.spec
         block_cipher = None
 
         a = Analysis(
-            ['main.py'],
+            ['main_for_mac.py'],
             pathex=[],
             binaries=[],
             datas=[('HarmonyOS_Sans_SC_Regular.ttf', '.')],
