@@ -25,7 +25,27 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller PyQt5
-    
+
+    - name: Get current version
+      id: get_version
+      run: echo "CURRENT_VERSION=$(cat version.txt)" >> $GITHUB_ENV
+
+    - name: Increment version
+      id: increment_version
+      run: |
+        CURRENT_VERSION=$(cat version.txt)
+        NEW_VERSION=$(echo $CURRENT_VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+        echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+        echo $NEW_VERSION > version.txt
+
+    - name: Commit new version
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@github.com'
+        git add version.txt
+        git commit -m "Bump version to ${{ env.NEW_VERSION }}"
+        git push origin main
+
     - name: Create and modify spec file
       run: |
         pyinstaller --name ProjectExportTool --windowed --onefile main_for_mac.py
@@ -82,7 +102,7 @@ jobs:
 
     - name: Clean output directory
       run: rm -rf /Users/runner/work/Project_Exporter/Project_Exporter/dist/ProjectExportTool.app
-  
+
     - name: Run PyInstaller
       run: pyinstaller -y ProjectExportTool.spec
 
@@ -92,8 +112,31 @@ jobs:
         mv dist/ProjectExportTool.app ProjectExportTool_temp/
         hdiutil create -volname ProjectExportTool -srcfolder ProjectExportTool_temp -ov -format UDZO ProjectExportTool.dmg
 
-    - name: Upload DMG
+    - name: Upload DMG as artifact
       uses: actions/upload-artifact@v2
       with:
         name: ProjectExportTool-dmg
         path: ProjectExportTool.dmg
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.NEW_VERSION }}
+        release_name: ProjectExportTool Release ${{ env.NEW_VERSION }}
+        body: |
+          Release of ProjectExportTool version ${{ env.NEW_VERSION }}.
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ProjectExportTool.dmg
+        asset_name: ProjectExportTool.dmg
+        asset_content_type: application/octet-stream
