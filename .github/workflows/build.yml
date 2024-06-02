@@ -25,6 +25,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller PyQt5
+    
+    - name: Clean output directory
+      run: rm -rf /Users/runner/work/Project_Exporter/Project_Exporter/dist/ProjectExportTool.app
 
     - name: Create and modify spec file
       run: |
