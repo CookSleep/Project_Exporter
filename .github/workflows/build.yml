@@ -28,7 +28,6 @@ jobs:
     
     - name: Create and modify spec file
       run: |
-        pyinstaller -y ProjectExportTool.spec
         pyinstaller --name ProjectExportTool --windowed --onefile main_for_mac.py
         # 修改.spec文件
         sed -i '' 's/console=True/console=False/' ProjectExportTool.spec
@@ -80,7 +79,10 @@ jobs:
             bundle_identifier=None
         )
         EOF
-
+        
+    - name: Clean output directory
+      run: rm -rf /Users/runner/work/Project_Exporter/Project_Exporter/dist/ProjectExportTool.app
+  
     - name: Run PyInstaller
       run: pyinstaller ProjectExportTool.spec
 
