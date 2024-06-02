@@ -19,14 +19,14 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.12'  # 设置Python版本
+        python-version: '3.x'  # 根据你的需要设置Python版本
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller PyQt5
 
-    - name: Create spec file
+    - name: Create and modify spec file
       run: |
         pyinstaller --name ProjectExportTool --windowed --onefile main.py
         # 修改.spec文件
