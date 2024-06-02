@@ -19,7 +19,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'  # 根据你的需要设置Python版本
+        python-version: '3.12'  # 根据你的需要设置Python版本
 
     - name: Install dependencies
       run: |
@@ -31,54 +31,54 @@ jobs:
         pyinstaller --name ProjectExportTool --windowed --onefile main.py
         # 修改.spec文件
         sed -i '' 's/console=True/console=False/' ProjectExportTool.spec
-        cat <<EOT >> ProjectExportTool.spec
-block_cipher = None
+        cat << 'EOF' >> ProjectExportTool.spec
+        block_cipher = None
 
-a = Analysis(
-    ['main.py'],
-    pathex=[],
-    binaries=[],
-    datas=[('HarmonyOS_Sans_SC_Regular.ttf', '.')],
-    hiddenimports=['PyQt5', 'PyQt5.QtWidgets', 'PyQt5.QtGui', 'PyQt5.QtCore'],
-    hookspath=[],
-    runtime_hooks=[],
-    excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
-)
-pyz = PYZ(a.pure, a.zipped_data,
-         cipher=block_cipher)
+        a = Analysis(
+            ['main.py'],
+            pathex=[],
+            binaries=[],
+            datas=[('HarmonyOS_Sans_SC_Regular.ttf', '.')],
+            hiddenimports=['PyQt5', 'PyQt5.QtWidgets', 'PyQt5.QtGui', 'PyQt5.QtCore'],
+            hookspath=[],
+            runtime_hooks=[],
+            excludes=[],
+            win_no_prefer_redirects=False,
+            win_private_assemblies=False,
+            cipher=block_cipher,
+        )
+        pyz = PYZ(a.pure, a.zipped_data,
+                cipher=block_cipher)
 
-exe = EXE(pyz,
-          a.scripts,
-          [],
-          exclude_binaries=True,
-          name='ProjectExportTool',
-          debug=False,
-          bootloader_ignore_signals=False,
-          strip=False,
-          upx=True,
-          upx_exclude=[],
-          runtime_tmpdir=None,
-          console=False)
+        exe = EXE(pyz,
+                  a.scripts,
+                  [],
+                  exclude_binaries=True,
+                  name='ProjectExportTool',
+                  debug=False,
+                  bootloader_ignore_signals=False,
+                  strip=False,
+                  upx=True,
+                  upx_exclude=[],
+                  runtime_tmpdir=None,
+                  console=False)
 
-coll = COLLECT(exe,
-               a.binaries,
-               a.zipfiles,
-               a.datas,
-               strip=False,
-               upx=True,
-               upx_exclude=[],
-               name='ProjectExportTool')
+        coll = COLLECT(exe,
+                      a.binaries,
+                      a.zipfiles,
+                      a.datas,
+                      strip=False,
+                      upx=True,
+                      upx_exclude=[],
+                      name='ProjectExportTool')
 
-app = BUNDLE(
-    coll,
-    name='ProjectExportTool.app',
-    icon=None,
-    bundle_identifier=None
-)
-EOT
+        app = BUNDLE(
+            coll,
+            name='ProjectExportTool.app',
+            icon=None,
+            bundle_identifier=None
+        )
+        EOF
 
     - name: Run PyInstaller
       run: pyinstaller ProjectExportTool.spec
