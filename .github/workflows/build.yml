@@ -79,12 +79,12 @@ jobs:
             bundle_identifier=None
         )
         EOF
-        
+
     - name: Clean output directory
       run: rm -rf /Users/runner/work/Project_Exporter/Project_Exporter/dist/ProjectExportTool.app
   
     - name: Run PyInstaller
-      run: pyinstaller ProjectExportTool.spec
+      run: pyinstaller -y ProjectExportTool.spec
 
     - name: Create DMG
       run: |
