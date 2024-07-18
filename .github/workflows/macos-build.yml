@@ -24,14 +24,14 @@ jobs:
 
     - name: Build macOS app
       run: |
-        pyinstaller --onefile project_exporter.py
+        pyinstaller project_exporter.spec
         echo "Contents of dist directory:"
         ls -R dist
 
     - name: Create ZIP archive
       run: |
         cd dist
-        zip -j "../Project_Exporter-macOS.zip" project_exporter
+        zip -r "../Project_Exporter-macOS.zip" "项目文件导出工具.app"
         cd ..
         echo "Contents of current directory:"
         ls -l
