@@ -54,15 +54,15 @@ jobs:
             releaseId = response.data.id;
             uploadUrl = response.data.upload_url;
           }
-          console.log(`UPLOAD_URL=${uploadUrl}`);
-          console.log(`RELEASE_ID=${releaseId}`);
-          
+          core.setOutput('upload_url', uploadUrl);
+          core.setOutput('release_id', releaseId);
+
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ env.UPLOAD_URL }}
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
         asset_path: ./Project_Exporter-macOS.zip
         asset_name: Project_Exporter-macOS.zip
         asset_content_type: application/zip
@@ -74,7 +74,7 @@ jobs:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
           const fs = require('fs');
-          const releaseId = process.env.RELEASE_ID;
+          const releaseId = '${{ steps.get_release.outputs.release_id }}';
           const { data: assets } = await github.rest.repos.listReleaseAssets({
             owner: context.repo.owner,
             repo: context.repo.repo,
