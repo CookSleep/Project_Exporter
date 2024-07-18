@@ -36,17 +36,27 @@ jobs:
         echo "Contents of current directory:"
         ls -l
 
-    - name: Get latest release
+    - name: Get release information
       id: get_release
       uses: actions/github-script@v6
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          const response = await github.rest.repos.getLatestRelease({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-          });
-          return { upload_url: response.data.upload_url, release_id: response.data.id };
+          let releaseId, uploadUrl;
+          if (context.payload.release) {
+            // This is a release event
+            releaseId = context.payload.release.id;
+            uploadUrl = context.payload.release.upload_url;
+          } else {
+            // This is a manual trigger, get the latest release
+            const response = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            releaseId = response.data.id;
+            uploadUrl = response.data.upload_url;
+          }
+          return { upload_url: uploadUrl, release_id: releaseId };
 
     - name: Upload to Release
       uses: actions/upload-release-asset@v1
@@ -57,5 +67,3 @@ jobs:
         asset_path: ./Project_Exporter-macOS.zip
         asset_name: Project_Exporter-macOS.zip
         asset_content_type: application/zip
-
-    # 移除更新 Release 描述的步骤
