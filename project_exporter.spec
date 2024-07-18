@@ -23,13 +23,17 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     [],
-    exclude_binaries=True,
     name='项目文件导出工具',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -39,22 +43,11 @@ exe = EXE(
     icon='icon-3种尺寸.ico'
 )
 
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='项目文件导出工具',
-)
-
 # 仅在 macOS 上添加 BUNDLE
 import sys
 if sys.platform == 'darwin':
     app = BUNDLE(
-        coll,
+        exe,
         name='项目文件导出工具.app',
         icon='icon-3种尺寸.icns',
         bundle_identifier=None,
