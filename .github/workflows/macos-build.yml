@@ -9,10 +9,10 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.x'
 
@@ -54,15 +54,15 @@ jobs:
             releaseId = response.data.id;
             uploadUrl = response.data.upload_url;
           }
-          core.setOutput('upload_url', uploadUrl);
-          core.setOutput('release_id', releaseId);
-
+          console.log(`UPLOAD_URL=${uploadUrl}`);
+          console.log(`RELEASE_ID=${releaseId}`);
+          
     - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
+      uses: actions/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        upload_url: ${{ env.UPLOAD_URL }}
         asset_path: ./Project_Exporter-macOS.zip
         asset_name: Project_Exporter-macOS.zip
         asset_content_type: application/zip
@@ -74,7 +74,7 @@ jobs:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
           const fs = require('fs');
-          const releaseId = ${{ steps.get_release.outputs.release_id }};
+          const releaseId = process.env.RELEASE_ID;
           const { data: assets } = await github.rest.repos.listReleaseAssets({
             owner: context.repo.owner,
             repo: context.repo.repo,
