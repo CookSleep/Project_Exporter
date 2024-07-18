@@ -57,6 +57,12 @@ jobs:
           core.setOutput('upload_url', uploadUrl);
           core.setOutput('release_id', releaseId);
 
+    - name: Debug
+      run: |
+        echo "Upload URL: ${{ steps.get_release.outputs.upload_url }}"
+        echo "Release ID: ${{ steps.get_release.outputs.release_id }}"
+        ls -l ./Project_Exporter-macOS.zip
+
     - name: Upload to Release
       uses: actions/upload-release-asset@v1
       env:
