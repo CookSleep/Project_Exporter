@@ -24,20 +24,16 @@ jobs:
     - name: Build macOS app
       run: |
         pyinstaller project_exporter.spec
-    
-    - name: Create DMG
+        echo "Contents of dist directory:"
+        ls -R dist
+
+    - name: Create ZIP archive
       run: |
-        brew install create-dmg
-        create-dmg \
-          --volname "项目文件导出工具" \
-          --window-pos 200 120 \
-          --window-size 600 300 \
-          --icon-size 100 \
-          --icon "项目文件导出工具.app" 175 120 \
-          --hide-extension "项目文件导出工具.app" \
-          --app-drop-link 425 120 \
-          "项目文件导出工具.dmg" \
-          "dist/项目文件导出工具.app"
+        cd dist
+        zip -r "../项目文件导出工具-macOS.zip" "项目文件导出工具.app"
+        cd ..
+        echo "Contents of current directory:"
+        ls -l
 
     - name: Get latest release
       id: get_release
@@ -57,6 +53,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release.outputs.result }}
-        asset_path: ./项目文件导出工具.dmg
-        asset_name: 项目文件导出工具-macOS.dmg
-        asset_content_type: application/x-apple-diskimage
+        asset_path: ./项目文件导出工具-macOS.zip
+        asset_name: 项目文件导出工具-macOS.zip
+        asset_content_type: application/zip
