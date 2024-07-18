@@ -2,7 +2,7 @@ name: Build macOS App
 
 on:
   release:
-    types: [published, edited]
+    types: [created]
   workflow_dispatch:
 
 jobs:
@@ -36,39 +36,15 @@ jobs:
         echo "Contents of current directory:"
         ls -l
 
-    - name: Get release information
-      id: get_release
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-          let releaseId, uploadUrl;
-          if (context.payload.release) {
-            releaseId = context.payload.release.id;
-            uploadUrl = context.payload.release.upload_url;
-          } else {
-            const response = await github.rest.repos.getLatestRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-            releaseId = response.data.id;
-            uploadUrl = response.data.upload_url;
-          }
-          core.setOutput('upload_url', uploadUrl);
-          core.setOutput('release_id', releaseId);
-
     - name: Debug
       run: |
-        echo "Upload URL: ${{ steps.get_release.outputs.upload_url }}"
-        echo "Release ID: ${{ steps.get_release.outputs.release_id }}"
+        echo "GITHUB_REF: ${{ github.ref }}"
         ls -l ./Project_Exporter-macOS.zip
 
-    - name: Upload to Release
-      uses: actions/upload-release-asset@v1
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: ./Project_Exporter-macOS.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }}
-        asset_path: ./Project_Exporter-macOS.zip
-        asset_name: Project_Exporter-macOS.zip
-        asset_content_type: application/zip
