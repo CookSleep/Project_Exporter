@@ -1,0 +1,49 @@
+name: Build macOS App
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyQt5 pyinstaller
+    
+    - name: Build macOS app
+      run: |
+        pyinstaller project_exporter.spec
+    
+    - name: Create DMG
+      run: |
+        brew install create-dmg
+        create-dmg \
+          --volname "项目文件导出工具" \
+          --window-pos 200 120 \
+          --window-size 600 300 \
+          --icon-size 100 \
+          --icon "项目文件导出工具.app" 175 120 \
+          --hide-extension "项目文件导出工具.app" \
+          --app-drop-link 425 120 \
+          "项目文件导出工具.dmg" \
+          "dist/项目文件导出工具.app"
+    
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./项目文件导出工具.dmg
+        asset_name: 项目文件导出工具-macOS.dmg
+        asset_content_type: application/x-apple-diskimage
