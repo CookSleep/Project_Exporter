@@ -2,11 +2,7 @@ name: Build macOS App
 
 on:
   release:
-    types: [created]
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -40,21 +36,38 @@ jobs:
         echo "Contents of current directory:"
         ls -l
 
-    - name: Upload Release Asset
+    - name: Get latest release
+      id: get_release
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const response = await github.rest.repos.getLatestRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+          });
+          core.setOutput('upload_url', response.data.upload_url);
+          core.setOutput('release_id', response.data.id);
+
+    - name: Upload to Release
       uses: actions/upload-release-asset@v1
-      if: github.event_name == 'release' && github.event.action == 'created'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
         asset_path: ./项目文件导出工具-macOS.zip
         asset_name: 项目文件导出工具-macOS.zip
         asset_content_type: application/zip
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      if: github.event_name != 'release'
+    - name: Update Release
+      if: github.event_name == 'workflow_dispatch'
+      uses: actions/github-script@v6
       with:
-        name: 项目文件导出工具-macOS
-        path: ./项目文件导出工具-macOS.zip
-
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          github.rest.repos.updateRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: ${{ steps.get_release.outputs.release_id }},
+            body: 'This release has been updated with a new build on ${{ github.event.repository.updated_at }}'
+          })
