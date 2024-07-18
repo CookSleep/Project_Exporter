@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v3
 
@@ -42,38 +44,24 @@ jobs:
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          let releaseId, uploadUrl;
+          let release;
           if (context.payload.release) {
-            releaseId = context.payload.release.id;
-            uploadUrl = context.payload.release.upload_url;
+            release = context.payload.release;
           } else {
             const response = await github.rest.repos.getLatestRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-            releaseId = response.data.id;
-            uploadUrl = response.data.upload_url;
+            release = response.data;
           }
-          core.setOutput('upload_url', uploadUrl);
-          core.setOutput('release_id', releaseId);
+          core.setOutput('upload_url', release.upload_url);
+          core.setOutput('release_id', release.id);
 
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_release.outputs.upload_url }}
-        asset_path: ./Project_Exporter-macOS.zip
-        asset_name: Project_Exporter-macOS.zip
-        asset_content_type: application/zip
-
-    - name: Update Release Asset
-      if: github.event_name == 'release'
+    - name: Delete existing asset
       uses: actions/github-script@v6
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          const fs = require('fs');
           const releaseId = '${{ steps.get_release.outputs.release_id }}';
           const { data: assets } = await github.rest.repos.listReleaseAssets({
             owner: context.repo.owner,
@@ -88,10 +76,13 @@ jobs:
               asset_id: asset.id,
             });
           }
-          await github.rest.repos.uploadReleaseAsset({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            release_id: releaseId,
-            name: 'Project_Exporter-macOS.zip',
-            data: fs.readFileSync('Project_Exporter-macOS.zip'),
-          });
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release.outputs.upload_url }}
+        asset_path: ./Project_Exporter-macOS.zip
+        asset_name: Project_Exporter-macOS.zip
+        asset_content_type: application/zip
