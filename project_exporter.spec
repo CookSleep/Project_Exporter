@@ -7,7 +7,7 @@ block_cipher = None
 # 获取当前脚本所在的目录
 current_dir = os.path.dirname(os.path.abspath(SPEC))
 # 定义输出目录为当前目录
-output_dir = os.path.join(current_dir, 'build')
+output_dir = os.path.join(current_dir, 'dist')
 
 a = Analysis(['main.py'],
              pathex=[],
