@@ -56,6 +56,6 @@ if sys.platform == 'darwin':
     app = BUNDLE(
         coll,
         name='项目文件导出工具.app',
-        icon='icon-3种尺寸.ico',
+        icon='icon-3种尺寸.icns',
         bundle_identifier=None,
     )
