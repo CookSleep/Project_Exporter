@@ -38,13 +38,25 @@ jobs:
           --app-drop-link 425 120 \
           "项目文件导出工具.dmg" \
           "dist/项目文件导出工具.app"
-    
+
+    - name: Get latest release
+      id: get_release
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const release = await github.rest.repos.getLatestRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo
+          })
+          return release.data.upload_url
+
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ github.event.release.upload_url }}
+        upload_url: ${{ steps.get_release.outputs.result }}
         asset_path: ./项目文件导出工具.dmg
         asset_name: 项目文件导出工具-macOS.dmg
         asset_content_type: application/x-apple-diskimage
