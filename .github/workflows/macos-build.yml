@@ -19,7 +19,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install PyQt5 pyinstaller
+        pip install -r requirements.txt
+        pip install pyinstaller
     
     - name: Build macOS app
       run: |
@@ -35,24 +36,12 @@ jobs:
         echo "Contents of current directory:"
         ls -l
 
-    - name: Get latest release
-      id: get_release
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-          const release = await github.rest.repos.getLatestRelease({
-            owner: context.repo.owner,
-            repo: context.repo.repo
-          })
-          return release.data.upload_url
-
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.get_release.outputs.result }}
+        upload_url: ${{ github.event.release.upload_url }}
         asset_path: ./项目文件导出工具-macOS.zip
         asset_name: 项目文件导出工具-macOS.zip
         asset_content_type: application/zip
